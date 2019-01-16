@@ -2,8 +2,11 @@
 
 module Main(main) where
 
+import System.Random
 import Graphics.Gloss
 import Grid
+import Board
+import Typeclass
 
 window :: Display
 window = InWindow "2048" (600, 600) (50, 50)
@@ -11,10 +14,5 @@ window = InWindow "2048" (600, 600) (50, 50)
 background :: Color
 background = white
 
-board = pictures grids
-	where
-		grids = map getPicture $ map f [0,1..15]
-		f n = Grid 2 (mod n 4) (div n 4)
-
 main :: IO ()
-main = display window background $ board
+main = display window background $ render board
