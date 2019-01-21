@@ -10,12 +10,15 @@ import Typeclass
 type Board = [Grid]
 
 instance Model Board where
-	render b = pictures $ map render b
+	render b = pictures [rectangleWire 200 200, container]
+		where
+			container = translate (negate 75) (negate 75) board
+			board = pictures $ map render b
 
 board :: Board
 board = map f [0,1..15]
 	where
-		f n = Grid 2 (mod n 4, div n 4)
+		f n = Grid 0 (mod n 4, div n 4)
 
 --addNewGrid :: RandomGen g => Board -> g -> Board
 --addNewGrid [] _ = []
