@@ -34,4 +34,3 @@ changeGrid [] _ = []
 changeGrid (b@(Grid _ (gx, gy)):bs) g@(Grid _ (x, y))
 	| gx == x && gy == y = [g] ++ bs
 	| otherwise = [b] ++ changeGrid bs g
-
