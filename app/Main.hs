@@ -8,7 +8,7 @@ import Grid
 import Board
 import Typeclass
 import Graphics.Gloss.Data.ViewPort
-import Graphics.Gloss.Interface.Pure.Game
+import Graphics.Gloss.Interface.Pure.Game hiding (shift)
 
 data GameState = GameState {
 	gameBoard :: Board
@@ -27,6 +27,7 @@ background :: Color
 background = white
 
 onMove :: Event -> GameState -> GameState
+onMove (EventKey (SpecialKey KeyLeft) _ _ _) (GameState {gameBoard=b}) = GameState {gameBoard = reduce L b}
 onMove _ g = g
 
 onStep :: Float -> GameState -> GameState
@@ -34,7 +35,7 @@ onStep _ g = g
 
 main :: IO ()
 main = do
-	x <- randomRIO (0,3)
-	y <- randomRIO (0,3)
-	let	initialGame = GameState {gameBoard = changeGrid board (Grid 2 (x,y))}
+	-- x <- randomRIO (0,3)
+	-- y <- randomRIO (0,3)
+	let	initialGame = GameState {gameBoard = changeGrid (Grid 2 (1,0)) . changeGrid (Grid 2 (2,0)) $ board} 
 	play window background fps initialGame render onMove onStep
