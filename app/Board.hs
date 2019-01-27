@@ -3,6 +3,7 @@
 module Board where
 
 import System.Random
+import Data.Maybe (fromMaybe)
 import Graphics.Gloss
 import Grid
 import Typeclass
@@ -20,17 +21,27 @@ board = map f [0,1..15]
 	where
 		f n = Grid 0 (mod n 4, div n 4)
 
---addNewGrid :: RandomGen g => Board -> g -> Board
---addNewGrid [] _ = []
---addNewGrid b g =
---	where	be = filter f b
---			f = \(Grid n _) -> n==0
---			p = (head xy, tail xy)
---			xy = take 2 . randomRs (0,3) . snd $ g'
---			g' = next g
-
-changeGrid :: Board -> Grid -> Board
-changeGrid [] _ = []
-changeGrid (b@(Grid _ (gx, gy)):bs) g@(Grid _ (x, y))
+-- change the value of a grid
+changeGrid :: Grid -> Board -> Board
+changeGrid _ [] = []
+changeGrid g@(Grid _ (x, y)) (b@(Grid _ (gx, gy)):bs)
 	| gx == x && gy == y = [g] ++ bs
-	| otherwise = [b] ++ changeGrid bs g
+	| otherwise = [b] ++ changeGrid g bs
+
+-- reduce a column/row of numbers
+reduce :: Direction -> [Grid] ->  [Grid]
+reduce _ [g]  = [g]
+reduce d (g:gs) = [fst result] ++ f gs
+	where
+		f
+			| snd result == Nothing = shift d . reduce d
+			| otherwise = ([fromMaybe g $ snd result] ++) . reduce d
+		result =  combine g $ head gs
+
+-- shift a column/row of numbers
+shift :: Direction -> [Grid] -> [Grid]
+shift _ [] = []
+shift d gs = map (move d) $ tail gs ++ [Grid 0 p]
+	where
+		Grid _ p = last gs
+
