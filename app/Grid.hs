@@ -7,11 +7,14 @@ type Value = Int
 
 type Position = (Int, Int)
 
-data Grid = Grid Value Position
-	deriving (Eq, Show)
+data Grid = Grid {
+	value :: Value,
+	position :: Position
+}	deriving (Eq, Show)
 
 -- left/right/up/down. Abbreviation is to avoid duplication with standard Left/Right
 data Direction = L | R | U | D
+	deriving (Eq, Show)
 
 instance Model Grid where
 	render (Grid 0 _) = blank
@@ -24,12 +27,12 @@ instance Model Grid where
 				container = rectangleWire 50 50
 				txt = translate (negate 10) (negate 10) $ scale 0.2 0.2 $ text (show n)
 
-combine :: Grid -> Grid -> (Grid, Maybe Grid)
-combine (Grid 0 p1) (Grid n p2) = ((Grid n p1), Just (Grid 0 p2))
-combine g g2@(Grid 0 _) = (g, Just g2)
+combine :: Grid -> Grid -> (Grid, Int)
+combine (Grid 0 p1) (Grid n _) = (Grid n p1, 1)
+combine g (Grid 0 _) = (g, 1)
 combine g1@(Grid n1 p1) g2@(Grid n2 _)
-	| n1 /= n2 = (g1, Just g2)
-	| otherwise = (Grid (n1+n2) p1, Nothing)
+	| n1 /= n2 = (g1, 2)
+	| otherwise = (Grid (n1+n2) p1, 3)
 
 move :: Direction -> Grid -> Grid
 move L (Grid n (x,y)) = Grid n (x-1, y)
