@@ -3,7 +3,7 @@
 module Board where
 
 import System.Random
-import Data.List (transpose)
+import Data.List (transpose, find)
 import Data.Maybe (fromMaybe)
 import Graphics.Gloss
 import Grid
@@ -22,6 +22,13 @@ board = map f [0,1..15]
 	where
 		f n = Grid 0 (mod n 4, div n 4)
 
+-- check if the grid is occupied already
+isFree :: Position -> Board -> Bool
+isFree p b = g /= Nothing
+	where
+		g = find f b
+		f = \(Grid n p') -> p == p' && n == 0
+
 -- change the value of a grid
 changeGrid :: Grid -> Board -> Board
 changeGrid _ [] = []
@@ -31,6 +38,7 @@ changeGrid g@(Grid _ (x, y)) (b@(Grid _ (gx, gy)):bs)
 
 -- reduce a column/row of numbers
 reduce :: Direction -> [Grid] ->  [Grid]
+reduce _ [] = []
 reduce _ [g]  = [g]
 reduce d b@(g1:g2:gs)
 	| snd result == 1 = reduce d ([g'] ++ shift gs) ++ [Grid 0 p]
@@ -67,7 +75,13 @@ reduceBoard :: Direction -> Board -> Board
 reduceBoard d = fromGrids d . map (reduce d) . getGrids d
 
 testReduce :: Bool
-testReduce = reduce L [(Grid 0 (0,0)), (Grid 2 (1,0)), (Grid 2 (2,0)), (Grid 0 (3,0))] == [(Grid 4 (0,0)), (Grid 0 (1,0)), (Grid 0 (2,0)), (Grid 0 (3,0))]
+testReduce = reduce R [ Grid 2 (3,0)
+                      , Grid 2 (2,0)
+                      , Grid 2 (1,0)
+                      , Grid 2 (0,0) ] == [ Grid 4 (3,0)
+                                          , Grid 4 (2,0)
+                                          , Grid 0 (1,0)
+                                          , Grid 0 (0,0) ]
 
 testGetGrids :: Bool
 testGetGrids = getGrids U board == [ [Grid 0 (0,3), Grid 0 (0,2), Grid 0 (0,1), Grid 0 (0,0)]
@@ -80,4 +94,10 @@ testFromGrids = board == fromGrids U [ [Grid 0 (0,3), Grid 0 (0,2), Grid 0 (0,1)
                                      , [Grid 0 (1,3), Grid 0 (1,2), Grid 0 (1,1), Grid 0 (1,0)]
                                      , [Grid 0 (2,3), Grid 0 (2,2), Grid 0 (2,1), Grid 0 (2,0)]
                                      , [Grid 0 (3,3), Grid 0 (3,2), Grid 0 (3,1), Grid 0 (3,0)] ]
+
+testIsFree :: Bool
+testIsFree = False == isFree (1,2) [ Grid 0 (0,3), Grid 0 (0,2), Grid 0 (0,1), Grid 0 (0,0)
+                                   , Grid 0 (1,3), Grid 2 (1,2), Grid 0 (1,1), Grid 0 (1,0)
+                                   , Grid 0 (2,3), Grid 0 (2,2), Grid 0 (2,1), Grid 0 (2,0)
+                                   , Grid 0 (3,3), Grid 0 (3,2), Grid 0 (3,1), Grid 0 (3,0) ]
 
