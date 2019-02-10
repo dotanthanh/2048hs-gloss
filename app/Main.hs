@@ -31,10 +31,9 @@ background :: Color
 background = white
 
 isLost :: GameState -> Bool
-isLost GameState {gameBoard = b} = b == reduceBoard L b 
-                                && b == reduceBoard R b
-                                && b == reduceBoard U b
-                                && b == reduceBoard D b
+isLost GameState {gameBoard = b} = length gEmpty == 0
+	where
+		gEmpty = filter (\g -> value g == 0) b
 
 spawnGrid :: GameState -> GameState
 spawnGrid g
@@ -62,23 +61,25 @@ onMove (EventKey (SpecialKey k) Down _ _) g
 	| otherwise = g
 	where
 		f d g'
-			| isLost g' = GameState { gameBoard = gameBoard g''
-                                    , seed = seed g''
-                                    , lost = True }
+			| isLost g'' = GameState { gameBoard = gameBoard g''
+                                     , seed = seed g'
+                                     , lost = True }
+			| b' == gameBoard g' = g'
 			| otherwise = spawnGrid g''
 			where
-				g'' = GameState { gameBoard = reduceBoard d (gameBoard g')
+				g'' = GameState { gameBoard = b'
                                 , seed = seed g'
 								, lost = lost g' }
+				b' = reduceBoard d (gameBoard g')
 onMove _ g = g
 
 onStep :: Float -> GameState -> GameState
 onStep x g = GameState { gameBoard = map f $ gameBoard g
-                          , seed = seed g
-                          , lost = lost g }
+                       , seed = seed g
+                       , lost = lost g }
 	where
 		f (Grid v p d b s)
-			| s < 1 && d == False = Grid v p False End (s+x*2)
+			| s < 1 && d == False = Grid v p False End (s+x*3)
 			| b == Inflate && s < 1.2 = Grid v p d b (s+x*3)
 			| s >= 1.2 && b == Inflate = Grid v p d Shrink s
 			| b == Shrink && s > 1 = Grid v p d b (s-x*3)

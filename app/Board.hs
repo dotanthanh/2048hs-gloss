@@ -8,14 +8,25 @@ import Data.Maybe (fromMaybe)
 import Graphics.Gloss
 import Grid
 import Typeclass
+import UIConfig
 
 type Board = [Grid]
 
+boardFrame :: Picture
+boardFrame = pictures [fullboard, slots]
+	where
+		fullboard = color boardBackground $ rectangleSolid boardSize boardSize
+		slots = translate fitGridToBoard fitGridToBoard . pictures $ map f [0,1..15]
+		f n = translate (x*size) (y*size) $ color slotBackground (rectangleSolid gridSize gridSize)
+			where
+				size = gridSize + dividerSize
+				x = fromIntegral $ mod n 4
+				y = fromIntegral $ div n 4
+
 instance Model Board where
-	render b = pictures [rectangleWire 200 200, container]
+	render b = pictures [boardFrame, grids]
 		where
-			container = translate (negate 75) (negate 75) board
-			board = pictures $ map render b
+			grids = translate fitGridToBoard fitGridToBoard (pictures $ map render b)
 
 board :: Board
 board = map f [0,1..15]
@@ -73,32 +84,4 @@ fromGrids d
 
 reduceBoard :: Direction -> Board -> Board
 reduceBoard d = fromGrids d . map (reduce d) . getGrids d
-
---testReduce :: Bool
---testReduce = reduce R [ Grid 2 (3,0) True 1
---                      , Grid 2 (2,0) True 1
---                      , Grid 2 (1,0) True 1
---                      , Grid 2 (0,0) True 1 ] == [ Grid 4 (3,0) True 1
---                                                 , Grid 4 (2,0) True 1
---                                                 , Grid 0 (1,0) True 1
---                                                 , Grid 0 (0,0) True 1 ]
-
---testGetGrids :: Bool
---testGetGrids = getGrids U board == [ [Grid 0 (0,3) True 1, Grid 0 (0,2) True 1, Grid 0 (0,1) True 1, Grid 0 (0,0) True 1]
---                                   , [Grid 0 (1,3) True 1, Grid 0 (1,2) True 1, Grid 0 (1,1) True 1, Grid 0 (1,0) True 1]
---                                   , [Grid 0 (2,3) True 1, Grid 0 (2,2) True 1, Grid 0 (2,1) True 1, Grid 0 (2,0) True 1]
---                                   , [Grid 0 (3,3) True 1, Grid 0 (3,2) True 1, Grid 0 (3,1) True 1, Grid 0 (3,0) True 1] ]
-
---testFromGrids :: Bool
---testFromGrids = board == fromGrids U [ [Grid 0 (0,3) True 1, Grid 0 (0,2) True 1, Grid 0 (0,1) True 1, Grid 0 (0,0) True 1]
---									 , [Grid 0 (1,3) True 1, Grid 0 (1,2) True 1, Grid 0 (1,1) True 1, Grid 0 (1,0) True 1]
---							   	     , [Grid 0 (2,3) True 1, Grid 0 (2,2) True 1, Grid 0 (2,1) True 1, Grid 0 (2,0) True 1]
---								     , [Grid 0 (3,3) True 1, Grid 0 (3,2) True 1, Grid 0 (3,1) True 1, Grid 0 (3,0) True 1] ]
-
---testIsFree :: Bool
---testIsFree = False == isFree (1,2)  [ Grid 0 (0,3) True 1, Grid 0 (0,2) True 1, Grid 0 (0,1) True 1, Grid 0 (0,0) True 1
---									, Grid 0 (1,3) True 1, Grid 2 (1,2) True 1, Grid 0 (1,1) True 1, Grid 0 (1,0) True 1
---							   	    , Grid 0 (2,3) True 1, Grid 0 (2,2) True 1, Grid 0 (2,1) True 1, Grid 0 (2,0) True 1
---								    , Grid 0 (3,3) True 1, Grid 0 (3,2) True 1, Grid 0 (3,1) True 1, Grid 0 (3,0) True 1]
-
 
